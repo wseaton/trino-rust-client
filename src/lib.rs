@@ -5,10 +5,10 @@ use response::*;
 use serde::de::DeserializeOwned;
 
 pub struct Client {
-    base_url: String,
-    port: u32,
-    user: Option<String>,
-    http_client: ReqwestClient,
+    pub base_url: String,
+    pub port: u32,
+    pub user: Option<String>,
+    pub http_client: ReqwestClient,
 }
 
 impl Client {
