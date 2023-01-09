@@ -7,16 +7,16 @@ use serde::de::DeserializeOwned;
 pub struct Client {
     base_url: String,
     port: u32,
-    user: String,
+    user: Option<String>,
     http_client: ReqwestClient,
 }
 
 impl Client {
-    pub fn new(base_url: &str, port: u32, user: &str) -> Client {
+    pub fn new(base_url: &str, port: u32, user: Option<&str>) -> Client {
         Client {
             base_url: base_url.to_string(),
             port,
-            user: user.to_string(),
+            user: user.map(|user| user.to_owned()),
             http_client: ReqwestClient::new(),
         }
     }
@@ -46,12 +46,13 @@ impl Client {
 
     async fn initial_request(&self, query_str: &str) -> Result<Response, reqwest::Error> {
         let conn_str = format!("{}:{}/v1/statement", &self.base_url, &self.port);
-        self.http_client
-            .post(conn_str)
-            .header("X-Trino-User", &self.user)
-            .body(query_str.to_string())
-            .send()
-            .await
+        let mut rb = self.http_client.post(conn_str).body(query_str.to_string());
+
+        if let Some(user) = &self.user {
+            rb = rb.header("X-Trino-User", user);
+        }
+
+        rb.send().await
     }
 
     async fn next_request(&self, next_uri: &str) -> Result<Response, reqwest::Error> {
