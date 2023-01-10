@@ -35,7 +35,10 @@ impl Client {
         T: DeserializeOwned,
     {
         let mut response = self.initial_request(query_str)?;
-        let mut response_body: QueryResults = response.json()?;
+        let raw_text = response.text()?;
+
+        debug!("raw_text: {}", raw_text);
+        let mut response_body: QueryResults = serde_json::from_str(&raw_text).unwrap();
 
         debug!("initial response_body: {:?}", response_body);
 
