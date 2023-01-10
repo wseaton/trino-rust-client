@@ -29,12 +29,15 @@ impl Client {
     //  - Implement own errors
     //  - Implement paging
     //  - Add client builder
+    #[tracing::instrument(skip(self))]
     pub fn query<T>(&self, query_str: &str) -> Result<Vec<T>, reqwest::Error>
     where
         T: DeserializeOwned,
     {
         let mut response = self.initial_request(query_str)?;
         let mut response_body: QueryResults = response.json()?;
+
+        debug!("initial response_body: {:?}", response_body);
 
         let mut data = Vec::new();
         while let Some(next_uri) = response_body.next_uri {
