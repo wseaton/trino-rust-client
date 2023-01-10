@@ -5,6 +5,8 @@ use reqwest::blocking::{Client as ReqwestClient, Response};
 use response::*;
 use serde::de::DeserializeOwned;
 
+use tracing::debug;
+
 pub struct Client {
     pub base_url: String,
     pub port: u32,
@@ -39,6 +41,7 @@ impl Client {
             response = self.next_request(&next_uri)?;
             response_body = response.json()?;
             if let Some(rows) = response_body.data {
+                debug!("rows: {:?}", rows);
                 data.extend(rows.into_iter().map(|x| serde_json::from_value(x).unwrap()));
             }
         }
