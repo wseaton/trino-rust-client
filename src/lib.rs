@@ -39,6 +39,7 @@ impl Client {
     {
         let mut response = self.initial_request(query_str)?;
         let headers = response.headers().clone();
+        debug!("trino response headers: {:#?}", headers);
         let raw_text = response.text()?;
 
         // decompress the text if gzip
