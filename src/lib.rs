@@ -41,20 +41,9 @@ impl Client {
         let headers = response.headers().clone();
         debug!("trino response headers: {:#?}", headers);
         let raw_text = response.text()?;
-
-        // decompress the text if gzip
-        let raw_text = if headers.get("Content-Encoding") == Some(&"gzip".parse().unwrap()) {
-            let mut decoder = GzDecoder::new(raw_text.as_bytes());
-            let mut decoded_text = String::new();
-            decoder.read_to_string(&mut decoded_text).unwrap();
-            decoded_text
-        } else {
-            raw_text
-        };
-
         debug!("raw_text: {}", raw_text);
-        let mut response_body: QueryResults = serde_json::from_str(&raw_text).unwrap();
 
+        let mut response_body: QueryResults = serde_json::from_str(&raw_text).unwrap();
         debug!("initial response_body: {:?}", response_body);
 
         let mut data = Vec::new();
