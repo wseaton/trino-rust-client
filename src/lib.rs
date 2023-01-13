@@ -48,12 +48,13 @@ impl Client {
 
         let mut data = Vec::new();
         while let Some(next_uri) = response_body.next_uri {
+            response = self.next_request(&next_uri)?;
+            response_body = response.json()?;
+
             if let Some(rows) = response_body.data {
                 debug!("rows: {:?}", rows);
                 data.extend(rows.into_iter().map(|x| serde_json::from_value(x).unwrap()));
             }
-            response = self.next_request(&next_uri)?;
-            response_body = response.json()?;
         }
         Ok(data)
     }
