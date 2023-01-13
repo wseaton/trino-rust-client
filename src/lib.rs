@@ -58,6 +58,7 @@ impl Client {
         Ok(data)
     }
 
+    #[tracing::instrument(skip(self, query_str))]
     fn initial_request(&self, query_str: &str) -> Result<Response, reqwest::Error> {
         let conn_str = format!("{}:{}/v1/statement", &self.base_url, &self.port);
         let mut rb = self.http_client.post(conn_str).body(query_str.to_string());
@@ -69,7 +70,9 @@ impl Client {
         rb.send()
     }
 
+    #[tracing::instrument(skip(self))]
     fn next_request(&self, next_uri: &str) -> Result<Response, reqwest::Error> {
+        debug!("navigating to next_uri: {}", next_uri);
         self.http_client.get(next_uri).send()
     }
 }
