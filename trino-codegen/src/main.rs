@@ -78,8 +78,7 @@ async fn main() {
             .await
             .expect("Query failed to return results");
 
-        let root_columns = &res.outputs;
-        let generated_struct = generate_struct(root_columns, &file);
+        let generated_struct = generate_struct(&res, &file);
 
         tracing::info!("Generated struct: {:#?}", generated_struct);
         tracing::info!("Writing to file: {:#?}", args.output_path);

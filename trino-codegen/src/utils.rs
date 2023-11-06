@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::explain::Output;
+use crate::explain::{ExplainRoot, Output};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use regex::Regex;
@@ -107,7 +107,7 @@ pub mod dates {
     }
 }
 
-pub fn generate_struct(root_columns: &[Output], file: &Path) -> TokenStream {
+pub fn generate_struct(root: &ExplainRoot, file: &Path) -> TokenStream {
     let varchar_re = Regex::new(r"^varchar\(\d+\)$").unwrap();
     let decimal_re = Regex::new(r"^decimal\(\d+,\d+\)$").unwrap();
     let timestamp_re = Regex::new(r"^timestamp\(\d+\)$").unwrap();
@@ -115,8 +115,23 @@ pub fn generate_struct(root_columns: &[Output], file: &Path) -> TokenStream {
     let array_re = Regex::new(r"^array\(.+\)$").unwrap();
     let map_re = Regex::new(r"^map\(.+\)$").unwrap();
 
-    let struct_fields = root_columns.iter().map(|x| {
-        let identifier = Ident::new(&x.symbol, Span::call_site());
+    // when the columnNames field is set, it means that the columns are aliased in the plan
+    let colnames = &root.descriptor.column_names;
+    // Parse "[activity_date, rh_user_id_v13, ebs_account_number_v63, url_no_query_v18]" into a Vec<String>
+    let colnames_vec: Vec<String> = colnames
+        .trim_matches(|c| c == '[' || c == ']')
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .collect();
+
+    let root_columns = &root.outputs;
+
+    if colnames_vec.len() != root_columns.len() {
+        panic!("The columns and aliases are not aligned!")
+    }
+
+    let struct_fields = root_columns.iter().enumerate().map(|(i, x)| {
+        let identifier = Ident::new(&colnames_vec[i], Span::call_site());
         let (rust_data_type, attr) = match x.r#type.as_str() {
             _ if varchar_re.is_match(x.r#type.as_str()) => {
                 (quote! { Option<String> }, TokenStream::new())
@@ -217,9 +232,7 @@ mod tests {
         let root: ExplainRoot =
             serde_json::from_str(include_str!("../data/explain2.json")).unwrap();
 
-        let root_columns = &root.outputs;
-
-        let generated_struct = generate_struct(root_columns, file);
+        let generated_struct = generate_struct(&root, file);
 
         println!("{generated_struct:#?}")
     }
