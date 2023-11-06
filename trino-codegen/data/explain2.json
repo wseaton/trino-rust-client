@@ -1,0 +1,204 @@
+{
+    "id": "5",
+    "name": "Output",
+    "descriptor": {
+        "columnNames": "[integer_type, smallint_type, tinyint_type, decimal_type, real_type, double_type, boolean_type, date_type, timestamp_type, timestamptz_type, time_type, char_type, varchar_type, varbinary_type, json_type, array_int_type, map_varchar_int_type, uuid_type]"
+    },
+    "outputs": [
+        {
+            "symbol": "expr",
+            "type": "integer"
+        },
+        {
+            "symbol": "expr_0",
+            "type": "smallint"
+        },
+        {
+            "symbol": "expr_1",
+            "type": "tinyint"
+        },
+        {
+            "symbol": "expr_2",
+            "type": "decimal(38,0)"
+        },
+        {
+            "symbol": "expr_3",
+            "type": "real"
+        },
+        {
+            "symbol": "expr_4",
+            "type": "double"
+        },
+        {
+            "symbol": "expr_5",
+            "type": "boolean"
+        },
+        {
+            "symbol": "expr_6",
+            "type": "date"
+        },
+        {
+            "symbol": "expr_7",
+            "type": "timestamp(3)"
+        },
+        {
+            "symbol": "expr_8",
+            "type": "timestamp(3) with time zone"
+        },
+        {
+            "symbol": "expr_9",
+            "type": "time(3)"
+        },
+        {
+            "symbol": "expr_10",
+            "type": "char(1)"
+        },
+        {
+            "symbol": "expr_11",
+            "type": "varchar"
+        },
+        {
+            "symbol": "expr_12",
+            "type": "varbinary"
+        },
+        {
+            "symbol": "expr_13",
+            "type": "json"
+        },
+        {
+            "symbol": "expr_14",
+            "type": "array(integer)"
+        },
+        {
+            "symbol": "map",
+            "type": "map(varchar(4), integer)"
+        },
+        {
+            "symbol": "expr_15",
+            "type": "uuid"
+        }
+    ],
+    "details": [
+        "integer_type := expr",
+        "smallint_type := expr_0",
+        "tinyint_type := expr_1",
+        "decimal_type := expr_2",
+        "real_type := expr_3",
+        "double_type := expr_4",
+        "boolean_type := expr_5",
+        "date_type := expr_6",
+        "timestamp_type := expr_7",
+        "timestamptz_type := expr_8",
+        "time_type := expr_9",
+        "char_type := expr_10",
+        "varchar_type := expr_11",
+        "varbinary_type := expr_12",
+        "json_type := expr_13",
+        "array_int_type := expr_14",
+        "map_varchar_int_type := map",
+        "uuid_type := expr_15"
+    ],
+    "estimates": [
+        {
+            "outputRowCount": 1.0,
+            "outputSizeInBytes": 422.0,
+            "cpuCost": 0.0,
+            "memoryCost": 0.0,
+            "networkCost": 0.0
+        }
+    ],
+    "children": [
+        {
+            "id": "0",
+            "name": "Values",
+            "descriptor": {},
+            "outputs": [
+                {
+                    "symbol": "expr_3",
+                    "type": "real"
+                },
+                {
+                    "symbol": "expr_2",
+                    "type": "decimal(38,0)"
+                },
+                {
+                    "symbol": "expr_5",
+                    "type": "boolean"
+                },
+                {
+                    "symbol": "expr_4",
+                    "type": "double"
+                },
+                {
+                    "symbol": "expr_7",
+                    "type": "timestamp(3)"
+                },
+                {
+                    "symbol": "expr_6",
+                    "type": "date"
+                },
+                {
+                    "symbol": "expr_9",
+                    "type": "time(3)"
+                },
+                {
+                    "symbol": "expr_8",
+                    "type": "timestamp(3) with time zone"
+                },
+                {
+                    "symbol": "expr_1",
+                    "type": "tinyint"
+                },
+                {
+                    "symbol": "expr_0",
+                    "type": "smallint"
+                },
+                {
+                    "symbol": "expr_11",
+                    "type": "varchar"
+                },
+                {
+                    "symbol": "expr_12",
+                    "type": "varbinary"
+                },
+                {
+                    "symbol": "expr_10",
+                    "type": "char(1)"
+                },
+                {
+                    "symbol": "expr_15",
+                    "type": "uuid"
+                },
+                {
+                    "symbol": "expr_13",
+                    "type": "json"
+                },
+                {
+                    "symbol": "expr_14",
+                    "type": "array(integer)"
+                },
+                {
+                    "symbol": "expr",
+                    "type": "integer"
+                },
+                {
+                    "symbol": "map",
+                    "type": "map(varchar(4), integer)"
+                }
+            ],
+            "details": [
+                "(REAL '1.2345', CAST(DECIMAL '12345678901' AS decimal(38, 0)), true, 1.2345678901234567E0 )"
+            ],
+            "estimates": [
+                {
+                    "outputRowCount": 1.0,
+                    "outputSizeInBytes": 422.0,
+                    "cpuCost": 0.0,
+                    "memoryCost": 0.0,
+                    "networkCost": 0.0
+                }
+            ],
+            "children": []
+        }
+    ]
+}
