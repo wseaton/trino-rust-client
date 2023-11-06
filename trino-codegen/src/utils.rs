@@ -1,9 +1,9 @@
 use std::path::Path;
 
+use crate::explain::Output;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-
-use crate::explain::Output;
+use regex::Regex;
 
 pub mod array {
     use serde::de::{self, Deserializer};
@@ -68,15 +68,15 @@ pub mod dates {
 
     pub fn from_str_to_naive_datetime<'de, D>(
         deserializer: D,
-    ) -> Result<Option<NaiveDateTime>, D::Error>
+    ) -> Result<Option<chrono::NaiveDateTime>, D::Error>
     where
         D: Deserializer<'de>,
     {
         let s: Option<String> = Option::deserialize(deserializer)?;
         s.map_or(Ok(None), |s| {
-            NaiveDateTime::parse_from_str(&s, "%Y-%m-%d %H:%M:%S.%f")
+            chrono::NaiveDateTime::parse_from_str(&s, "%Y-%m-%d %H:%M:%S%.f")
                 .map(Some)
-                .map_err(Error::custom)
+                .map_err(serde::de::Error::custom)
         })
     }
 
@@ -91,21 +91,62 @@ pub mod dates {
                 .map_err(Error::custom)
         })
     }
+
+    pub fn from_str_to_naive_time<'de, D>(
+        deserializer: D,
+    ) -> Result<Option<chrono::NaiveTime>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: Option<String> = Option::deserialize(deserializer)?;
+        s.map_or(Ok(None), |s| {
+            chrono::NaiveTime::parse_from_str(&s, "%H:%M:%S%.f")
+                .map(Some)
+                .map_err(serde::de::Error::custom)
+        })
+    }
 }
 
 pub fn generate_struct(root_columns: &[Output], file: &Path) -> TokenStream {
+    let varchar_re = Regex::new(r"^varchar\(\d+\)$").unwrap();
+    let decimal_re = Regex::new(r"^decimal\(\d+,\d+\)$").unwrap();
+    let timestamp_re = Regex::new(r"^timestamp\(\d+\)$").unwrap();
+    let time_re = Regex::new(r"^time\(\d+\)$").unwrap();
+    let array_re = Regex::new(r"^array\(.+\)$").unwrap();
+    let map_re = Regex::new(r"^map\(.+\)$").unwrap();
+
     let struct_fields = root_columns.iter().map(|x| {
         let identifier = Ident::new(&x.symbol, Span::call_site());
         let (rust_data_type, attr) = match x.r#type.as_str() {
-            "varchar(16383)" => (quote! { Option<String> }, TokenStream::new()),
+            _ if varchar_re.is_match(x.r#type.as_str()) => {
+                (quote! { Option<String> }, TokenStream::new())
+            }
+            _ if decimal_re.is_match(x.r#type.as_str()) => (
+                quote! { Option<bigdecimal::BigDecimal> },
+                TokenStream::new(),
+            ),
+            _ if timestamp_re.is_match(x.r#type.as_str()) => (
+                quote! { Option<chrono::NaiveDateTime> },
+                quote! { #[serde(deserialize_with = "dates::from_str_to_naive_datetime")] },
+            ),
+            _ if time_re.is_match(x.r#type.as_str()) => (
+                quote! { Option<chrono::NaiveTime> },
+                quote! { #[serde(deserialize_with = "dates::from_str_to_naive_time")] },
+            ),
+            _ if array_re.is_match(x.r#type.as_str()) => (
+                quote! { Option<Vec<array::Element>> },
+                quote! {  #[serde(deserialize_with = "array::from_homogeneous_array")]},
+            ),
+            _ if map_re.is_match(x.r#type.as_str()) => (
+                quote! { Option<std::collections::HashMap<String, serde_json::Value>> },
+                TokenStream::new(),
+            ),
+
             "integer" | "int" => (quote! { Option<i32> }, TokenStream::new()),
             "smallint" => (quote! { Option<i16> }, TokenStream::new()),
             "tinyint" => (quote! { Option<i8> }, TokenStream::new()),
             "bigint" => (quote! { Option<i64> }, TokenStream::new()),
-            "decimal" | "numeric" => (
-                quote! { Option<bigdecimal::BigDecimal> },
-                TokenStream::new(),
-            ),
+
             "float" | "real" => (quote! { Option<f32> }, TokenStream::new()),
             "double" => (quote! { Option<f64> }, TokenStream::new()),
             "boolean" | "bool" => (quote! { Option<bool> }, TokenStream::new()),
@@ -113,32 +154,19 @@ pub fn generate_struct(root_columns: &[Output], file: &Path) -> TokenStream {
                 quote! { Option<chrono::NaiveDate> },
                 quote! { #[serde(deserialize_with = "dates::from_str_to_naive_date")] },
             ),
-            "timestamp" => (
-                quote! { Option<chrono::NaiveDateTime> },
-                quote! { #[serde(deserialize_with = "dates::from_str_to_naive_datetime")] },
-            ),
+
             "timestamp with time zone" => (
                 quote! { Option<chrono::DateTime<chrono::Utc>> },
                 quote! { #[serde(deserialize_with = "dates::from_str_to_datetime")] },
             ),
-            "time" => (
-                quote! { Option<chrono::NaiveTime> },
-                quote! { #[serde(deserialize_with = "dates::from_str_to_naive_time")] },
-            ),
+
             "binary" | "varbinary" => (
                 quote! { Option<Vec<u8>> },
                 quote! {  #[serde(deserialize_with = "binary::from_base64")]},
             ),
             "json" => (quote! { Option<serde_json::Value> }, TokenStream::new()),
             "uuid" => (quote! { Option<uuid::Uuid> }, TokenStream::new()),
-            _ if x.r#type.as_str().starts_with("array") => (
-                quote! { Option<Vec<array::Element>> },
-                quote! {  #[serde(deserialize_with = "array::from_homogeneous_array")]},
-            ),
-            _ if x.r#type.as_str().starts_with("map") => (
-                quote! { Option<std::collections::HashMap<String, serde_json::Value>> },
-                TokenStream::new(),
-            ),
+
             _ => (quote! { Option<String> }, TokenStream::new()),
         };
         quote! { #attr pub #identifier: #rust_data_type, }

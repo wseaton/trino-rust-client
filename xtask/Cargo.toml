@@ -18,3 +18,4 @@ trino_codegen = { path = "../trino-codegen" }
 chrono = "*"
 uuid = { version = "*", features = ["v4", "serde"] }
 data-encoding = "*"
+bigdecimal = { version = "*", features = ["serde"] }
