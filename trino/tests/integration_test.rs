@@ -15,7 +15,12 @@ async fn test_query_typed() {
         comment: String,
     }
 
-    let client = trino::Client::new("http://localhost", 8080, "user");
+    let mut cb = trino::ClientBuilder::default()
+        .base_url("http://localhost")
+        .port(8080)
+        .user("user");
+    let client = cb.build();
+
     let res: Vec<Nation> = client
         .query("SELECT * FROM tpch.tiny.nation")
         .await
@@ -27,7 +32,12 @@ async fn test_query_typed() {
 async fn test_query_untyped() {
     common::initialize().await;
 
-    let client = trino::Client::new("http://localhost", 8080, "user");
+    let mut cb = trino::ClientBuilder::default()
+        .base_url("http://localhost")
+        .port(8080)
+        .user("user");
+    let client = cb.build();
+
     let res: Vec<Value> = client
         .query("SELECT * FROM tpch.tiny.nation")
         .await

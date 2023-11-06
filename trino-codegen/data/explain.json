@@ -1,0 +1,69 @@
+{
+    "id": "5",
+    "name": "Output",
+    "descriptor": {
+        "columnNames": "[catalog_name, connector_id, connector_name]"
+    },
+    "outputs": [
+        {
+            "symbol": "catalog_name",
+            "type": "varchar"
+        },
+        {
+            "symbol": "connector_id",
+            "type": "varchar"
+        },
+        {
+            "symbol": "connector_name",
+            "type": "varchar"
+        }
+    ],
+    "details": [],
+    "estimates": [
+        {
+            "outputRowCount": "NaN",
+            "outputSizeInBytes": "NaN",
+            "cpuCost": 0.0,
+            "memoryCost": 0.0,
+            "networkCost": 0.0
+        }
+    ],
+    "children": [
+        {
+            "id": "0",
+            "name": "TableScan",
+            "descriptor": {
+                "table": "system:metadata.catalogs"
+            },
+            "outputs": [
+                {
+                    "symbol": "catalog_name",
+                    "type": "varchar"
+                },
+                {
+                    "symbol": "connector_id",
+                    "type": "varchar"
+                },
+                {
+                    "symbol": "connector_name",
+                    "type": "varchar"
+                }
+            ],
+            "details": [
+                "catalog_name := catalog_name",
+                "connector_id := connector_id",
+                "connector_name := connector_name"
+            ],
+            "estimates": [
+                {
+                    "outputRowCount": "NaN",
+                    "outputSizeInBytes": "NaN",
+                    "cpuCost": "NaN",
+                    "memoryCost": 0.0,
+                    "networkCost": 0.0
+                }
+            ],
+            "children": []
+        }
+    ]
+}
